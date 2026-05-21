@@ -54,6 +54,8 @@ export default function Contact() {
 
   return (
     <section id="contact" ref={sectionRef} className="contact">
+      <div className="section-grid" />
+      <div className="deco-dots deco-dots-1" />
       <div className="section-container">
         <h2 ref={titleRef} className="section-title">
           <span className="section-number">04.</span> 联系我
@@ -79,13 +81,13 @@ export default function Contact() {
 
           <div ref={socialRef} className="contact-social">
             <a href="https://github.com/Chyb18" className="social-link" target="_blank" rel="noreferrer">
-              GitHub
+              <span>GitHub</span>
             </a>
             <a href="#" className="social-link" target="_blank" rel="noreferrer">
-              LinkedIn
+              <span>LinkedIn</span>
             </a>
             <a href="https://blog.csdn.net/chyb918" className="social-link" target="_blank" rel="noreferrer">
-              CSDN
+              <span>CSDN</span>
             </a>
           </div>
         </div>

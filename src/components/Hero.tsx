@@ -107,8 +107,11 @@ export default function Hero() {
     <section id="hero" ref={containerRef} className="hero">
       <canvas ref={canvasRef} className="hero-canvas" />
       <div className="hero-overlay" />
+      <div className="hero-overlay-grid" />
       <div ref={contentRef} className="hero-content">
-        <div className="hero-badge">27 届毕业生 · 前端开发</div>
+        <div className="hero-badge">
+          27 届毕业生 · 前端开发
+        </div>
         <h1 ref={titleRef} className="hero-title">
           陈宇彬
         </h1>
@@ -130,6 +133,7 @@ export default function Hero() {
         </div>
       </div>
       <div className="scroll-indicator">
+        <span className="scroll-text">Scroll</span>
         <div className="scroll-mouse">
           <div className="scroll-dot" />
         </div>

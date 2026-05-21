@@ -81,6 +81,9 @@ export default function About() {
 
   return (
     <section id="about" ref={sectionRef} className="about">
+      <div className="section-grid" />
+      <div className="deco-dots deco-dots-1" />
+      <div className="deco-dots deco-dots-2" />
       <div className="section-container">
         <h2 ref={titleRef} className="section-title">
           <span className="section-number">01.</span> 关于我

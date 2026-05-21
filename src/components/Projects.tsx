@@ -100,6 +100,7 @@ export default function Projects() {
         <div ref={gridRef} className="projects-grid">
           {filtered.map((project) => (
             <article key={project.id} className="project-card">
+              <div className="card-glow" />
               <div className="card-header">
                 <span className="card-num">#{String(project.id).padStart(2, '0')}</span>
                 <span className="card-category">{categoryLabels[project.category]}</span>
