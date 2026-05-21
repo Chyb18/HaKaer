@@ -59,14 +59,14 @@ export default function Contact() {
           </div>
 
           <div className="contact-social">
-            <a href="#" className="social-link" target="_blank" rel="noreferrer">
+            <a href="https://github.com/Chyb18" className="social-link" target="_blank" rel="noreferrer">
               GitHub
             </a>
             <a href="#" className="social-link" target="_blank" rel="noreferrer">
               LinkedIn
             </a>
-            <a href="#" className="social-link" target="_blank" rel="noreferrer">
-              博客
+            <a href="https://blog.csdn.net/chyb918" className="social-link" target="_blank" rel="noreferrer">
+              CSDN
             </a>
           </div>
         </div>

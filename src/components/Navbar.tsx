@@ -33,7 +33,7 @@ export default function Navbar() {
     <nav ref={navRef} className="navbar">
       <div className="navbar-inner">
         <span className="navbar-logo" onClick={() => scrollTo('#hero')}>
-          CYB<span className="logo-dot">.</span>
+          哈卡尔<span className="logo-dot">.</span>
         </span>
         <ul className="navbar-links">
           {navLinks.map((link) => (
