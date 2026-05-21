@@ -667,7 +667,7 @@ section {
   z-index: 10;
 }
 
-/* Card deck - pinned area */
+/* ===== Card Deck ===== */
 .projects-deck {
   position: relative;
   width: 100%;
@@ -675,10 +675,10 @@ section {
   margin: 0 auto;
   padding: 0 24px;
   height: 100vh;
-  perspective: 1200px;
+  perspective: 1400px;
 }
 
-/* Each card wrapper */
+/* ===== Each Card ===== */
 .project-card {
   position: absolute;
   top: 50%;
@@ -686,15 +686,15 @@ section {
   transform: translate(-50%, -50%);
   width: calc(100% - 48px);
   max-width: 900px;
-  max-height: 70vh;
+  max-height: 68vh;
   overflow-y: auto;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(99, 102, 241, 0.03));
-  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border, var(--border-color));
   border-radius: var(--radius);
   padding: 36px;
-  transition: border-color 0.4s ease;
   will-change: transform, opacity;
   backface-visibility: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
 }
 
 .project-card::-webkit-scrollbar {
@@ -704,21 +704,21 @@ section {
   background: transparent;
 }
 .project-card::-webkit-scrollbar-thumb {
-  background: var(--accent-1);
+  background: var(--card-primary, var(--accent-1));
   border-radius: 2px;
 }
 
-/* Gradient border top */
+/* Gradient border top — uses card color */
 .project-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--accent-gradient);
+  height: 3px;
+  background: linear-gradient(90deg, var(--card-primary, var(--accent-1)), var(--card-secondary, var(--accent-3)));
   background-size: 200% 100%;
-  animation: shimmer 3s ease infinite;
+  animation: shimmer 4s ease infinite;
 }
 
 @keyframes shimmer {
@@ -726,7 +726,7 @@ section {
   100% { background-position: -200% 0; }
 }
 
-/* Corner accent */
+/* Corner accent — uses card primary */
 .project-card::after {
   content: '';
   position: absolute;
@@ -734,37 +734,33 @@ section {
   right: -1px;
   width: 50px;
   height: 50px;
-  border-top: 2px solid var(--accent-1);
-  border-right: 2px solid var(--accent-1);
+  border-top: 2.5px solid var(--card-primary, var(--accent-1));
+  border-right: 2.5px solid var(--card-primary, var(--accent-1));
   border-radius: 0 var(--radius) 0 0;
-  opacity: 0.5;
+  opacity: 0.4;
   transition: opacity 0.4s ease;
 }
 
-.project-card:hover::after {
-  opacity: 1;
-}
-
-/* Inner glow on hover */
+/* Glow */
 .project-card .card-glow {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent 70%);
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, var(--card-glow-color, rgba(99, 102, 241, 0.06)), transparent 70%);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
 }
 
 .project-card:hover .card-glow {
   opacity: 1;
 }
 
-/* Card content areas */
+/* ===== Card Content ===== */
 .card-inner {
   position: relative;
   z-index: 1;
@@ -779,30 +775,29 @@ section {
 
 .card-num {
   font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--accent-1);
+  font-weight: 700;
+  color: var(--card-primary, var(--accent-1));
   font-family: 'Inter', monospace;
-  background: rgba(99, 102, 241, 0.08);
-  padding: 2px 10px;
+  background: var(--card-tag-bg, rgba(99, 102, 241, 0.08));
+  padding: 3px 12px;
   border-radius: 4px;
 }
 
 .card-category {
   font-size: 0.72rem;
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 4px;
-  background: rgba(99, 102, 241, 0.08);
-  color: var(--accent-3);
-  font-weight: 500;
+  background: var(--card-tag-bg, rgba(99, 102, 241, 0.08));
+  color: var(--card-primary, var(--accent-3));
+  font-weight: 600;
   letter-spacing: 0.3px;
 }
 
 .card-title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--text-primary);
-  transition: color 0.3s ease;
 }
 
 .card-time {
@@ -836,7 +831,7 @@ section {
   content: '▸';
   position: absolute;
   left: 0;
-  color: var(--accent-1);
+  color: var(--card-primary, var(--accent-1));
   font-weight: 700;
 }
 
@@ -850,7 +845,7 @@ section {
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 0.76rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card-tag-bg, rgba(255, 255, 255, 0.03));
   color: var(--text-muted);
   border: 1px solid var(--border-color);
   font-weight: 500;
@@ -858,17 +853,61 @@ section {
 }
 
 .tech-tag:hover {
-  border-color: var(--accent-1);
-  color: var(--accent-3);
-  background: rgba(99, 102, 241, 0.06);
+  border-color: var(--card-primary, var(--accent-1));
+  color: var(--card-primary, var(--accent-3));
   transform: translateY(-1px);
 }
 
-/* Project deck responsive */
+/* ===== Card Position Indicator ===== */
+.card-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-indicator-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: 'Inter', monospace;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  padding: 4px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.card-indicator-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.indicator-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--accent-1);
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
   .project-card {
     padding: 24px;
-    max-height: 75vh;
+    max-height: 72vh;
     width: calc(100% - 32px);
   }
   .project-card::after {
