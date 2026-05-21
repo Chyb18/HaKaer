@@ -53,27 +53,66 @@ export default function Skills() {
   }, [])
 
   useEffect(() => {
-    const bars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
-    if (!bars) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const bar = entry.target as HTMLElement
-            const level = bar.dataset.level
-            gsap.to(bar, {
-              width: `${level}%`,
-              duration: 1.2,
-              ease: 'power3.out',
-            })
-            observer.unobserve(bar)
-          }
+    const ctx = gsap.context(() => {
+      const groups = groupsRef.current?.children
+      if (!groups) return
+
+      // Groups stagger in
+      gsap.from(groups, {
+        scrollTrigger: {
+          trigger: groupsRef.current,
+          start: 'top 80%',
+        },
+        y: 40,
+        opacity: 0,
+        duration: 0.7,
+        stagger: 0.15,
+        ease: 'power3.out',
+      })
+
+      // Skill bars animate with scrub
+      const allBars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
+      if (!allBars) return
+
+      gsap.fromTo(
+        allBars,
+        { width: '0%' },
+        {
+          width: (i, el) => el.dataset.level + '%',
+          duration: 1.5,
+          stagger: 0.05,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: groupsRef.current,
+            start: 'top 75%',
+            end: '+=400',
+            scrub: 1,
+          },
+        }
+      )
+
+      // Counter animation for percentage numbers
+      allBars.forEach((bar) => {
+        const level = parseInt(bar.dataset.level || '0')
+        const parent = bar.closest('.skill-item')
+        const numEl = parent?.querySelector('.skill-level')
+        if (!numEl) return
+        const obj = { val: 0 }
+        gsap.to(obj, {
+          val: level,
+          duration: 1.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: bar,
+            start: 'top 85%',
+          },
+          onUpdate: () => {
+            numEl.textContent = `${Math.round(obj.val)}%`
+          },
         })
-      },
-      { threshold: 0.3 }
-    )
-    bars.forEach((bar) => observer.observe(bar))
-    return () => observer.disconnect()
+      })
+    }, groupsRef)
+    return () => ctx.revert()
   }, [])
 
   return (

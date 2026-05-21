@@ -6,38 +6,87 @@ gsap.registerPlugin(ScrollTrigger)
 
 export default function About() {
   const sectionRef = useRef<HTMLElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
+  const statNumsRef = useRef<HTMLSpanElement[]>([])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(contentRef.current, {
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 75%' },
-        x: -60,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out',
-      })
-      gsap.from(statsRef.current?.children ?? [], {
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
+      // Section title
+      gsap.from(titleRef.current, {
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
         y: 40,
         opacity: 0,
         duration: 0.8,
-        stagger: 0.15,
-        ease: 'back.out(1.7)',
+        ease: 'power3.out',
+      })
+
+      // Text paragraphs stagger in
+      const paragraphs = textRef.current?.querySelectorAll('p')
+      if (paragraphs) {
+        gsap.from(paragraphs, {
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
+          y: 30,
+          opacity: 0,
+          duration: 0.7,
+          stagger: 0.15,
+          ease: 'power3.out',
+        })
+      }
+
+      // Stats cards stagger in
+      const cards = statsRef.current?.children
+      if (cards) {
+        gsap.from(cards, {
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 65%' },
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.12,
+          ease: 'back.out(1.7)',
+        })
+      }
+
+      // Counter animation for stat numbers
+      const targets = [
+        { el: statNumsRef.current[0], target: 14, suffix: '+' },
+        { el: statNumsRef.current[1], target: 4, suffix: '' },
+        { el: statNumsRef.current[2], target: 3, suffix: '' },
+      ]
+
+      targets.forEach(({ el, target, suffix }) => {
+        if (!el) return
+        const obj = { val: 0 }
+        gsap.to(obj, {
+          val: target,
+          duration: 2,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: statsRef.current,
+            start: 'top 80%',
+          },
+          onUpdate: () => {
+            el.textContent = `${Math.round(obj.val)}${suffix}`
+          },
+        })
       })
     }, sectionRef)
     return () => ctx.revert()
   }, [])
 
+  const setStatRef = (el: HTMLSpanElement | null, index: number) => {
+    if (el) statNumsRef.current[index] = el
+  }
+
   return (
     <section id="about" ref={sectionRef} className="about">
       <div className="section-container">
-        <h2 className="section-title">
+        <h2 ref={titleRef} className="section-title">
           <span className="section-number">01.</span> 关于我
         </h2>
         <div className="about-grid">
-          <div ref={contentRef} className="about-text">
+          <div ref={textRef} className="about-text">
             <p>
               你好！我是 <strong>陈宇彬</strong>，一名 27 届毕业生，正在寻找前端开发岗位。
             </p>
@@ -53,15 +102,15 @@ export default function About() {
           </div>
           <div ref={statsRef} className="about-stats">
             <div className="stat-card">
-              <span className="stat-number">14+</span>
+              <span ref={(el) => setStatRef(el, 0)} className="stat-number">0</span>
               <span className="stat-label">项目经验</span>
             </div>
             <div className="stat-card">
-              <span className="stat-number">4</span>
+              <span ref={(el) => setStatRef(el, 1)} className="stat-number">0</span>
               <span className="stat-label">技术栈掌握</span>
             </div>
             <div className="stat-card">
-              <span className="stat-number">3</span>
+              <span ref={(el) => setStatRef(el, 2)} className="stat-number">0</span>
               <span className="stat-label">团队主导项目</span>
             </div>
           </div>

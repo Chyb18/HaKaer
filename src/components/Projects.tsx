@@ -19,6 +19,7 @@ const categoryLabels: Record<string, string> = {
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
+  const filterRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const [activeCategory, setActiveCategory] = useState('all')
 
@@ -35,38 +36,42 @@ export default function Projects() {
         duration: 0.8,
         ease: 'power3.out',
       })
+      gsap.from(filterRef.current?.children ?? [], {
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 78%' },
+        y: 20,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.05,
+        ease: 'power3.out',
+      })
     }, sectionRef)
     return () => ctx.revert()
   }, [])
 
-  // Animate project cards when they enter viewport
   useEffect(() => {
     const cards = gridRef.current?.children
     if (!cards || cards.length === 0) return
 
     const ctx = gsap.context(() => {
-      // Set initial hidden state
-      gsap.set(cards, { y: 60, opacity: 0 })
+      gsap.set(cards, { y: 60, opacity: 0, scale: 0.97 })
 
-      // Animate in when scrolled to
       gsap.to(cards, {
         y: 0,
         opacity: 1,
+        scale: 1,
         duration: 0.6,
-        stagger: 0.08,
+        stagger: 0.06,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: gridRef.current,
-          start: 'top 85%',
+          start: 'top 90%',
           once: true,
         },
       })
     })
 
     return () => {
-      // Clean up all GSAP animations and inline styles on unmount
       ctx.revert()
-      // Kill ScrollTriggers tied to this grid
       ScrollTrigger.getAll().forEach((st) => {
         if (st.trigger === gridRef.current) st.kill()
       })
@@ -80,7 +85,7 @@ export default function Projects() {
           <span className="section-number">02.</span> 项目经验
         </h2>
 
-        <div className="filter-bar">
+        <div ref={filterRef} className="filter-bar">
           {Object.entries(categoryLabels).map(([key, label]) => (
             <button
               key={key}

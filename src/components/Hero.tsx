@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null)
@@ -8,6 +11,7 @@ export default function Hero() {
   const descRef = useRef<HTMLParagraphElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
@@ -15,6 +19,25 @@ export default function Hero() {
       .from(subtitleRef.current, { y: 40, opacity: 0, duration: 0.8 }, '-=0.4')
       .from(descRef.current, { y: 30, opacity: 0, duration: 0.8 }, '-=0.4')
       .from(ctaRef.current, { y: 20, opacity: 0, duration: 0.6 }, '-=0.3')
+  }, [])
+
+  // Parallax fade on scroll
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to(contentRef.current, {
+        y: 80,
+        opacity: 0,
+        scale: 0.95,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        },
+      })
+    }, containerRef)
+    return () => ctx.revert()
   }, [])
 
   // Particle background
@@ -57,7 +80,6 @@ export default function Hero() {
         ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`
         ctx.fill()
       })
-      // draw connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x
@@ -81,15 +103,11 @@ export default function Hero() {
     }
   }, [])
 
-  const scrollToProjects = () => {
-    document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   return (
     <section id="hero" ref={containerRef} className="hero">
       <canvas ref={canvasRef} className="hero-canvas" />
       <div className="hero-overlay" />
-      <div className="hero-content">
+      <div ref={contentRef} className="hero-content">
         <div className="hero-badge">27 届毕业生 · 前端开发</div>
         <h1 ref={titleRef} className="hero-title">
           陈宇彬
@@ -103,7 +121,7 @@ export default function Hero() {
           涵盖政府级系统、跨境电商、AI 平台等多个领域。
         </p>
         <div ref={ctaRef} className="hero-cta">
-          <button className="btn-primary" onClick={scrollToProjects}>
+          <button className="btn-primary" onClick={() => document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' })}>
             查看项目
           </button>
           <button className="btn-outline" onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}>
