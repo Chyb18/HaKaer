@@ -13,62 +13,48 @@ export default function About() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Section title
+      // Section title with scale reveal
       gsap.from(titleRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
+        y: 40, opacity: 0, scale: 0.95,
+        duration: 0.8, ease: 'power4.out',
       })
 
-      // Text paragraphs stagger in
+      // Text paragraphs stagger with clip reveal feel
       const paragraphs = textRef.current?.querySelectorAll('p')
       if (paragraphs) {
         gsap.from(paragraphs, {
           scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
-          y: 30,
-          opacity: 0,
-          duration: 0.7,
-          stagger: 0.15,
+          y: 30, opacity: 0,
+          duration: 0.7, stagger: 0.12,
           ease: 'power3.out',
         })
       }
 
-      // Stats cards stagger in
+      // Stats cards with bounce
       const cards = statsRef.current?.children
       if (cards) {
         gsap.from(cards, {
           scrollTrigger: { trigger: sectionRef.current, start: 'top 65%' },
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.12,
+          y: 50, opacity: 0, scale: 0.9,
+          duration: 0.9, stagger: 0.1,
           ease: 'back.out(1.7)',
         })
       }
 
-      // Counter animation for stat numbers
+      // Number counter
       const targets = [
         { el: statNumsRef.current[0], target: 14, suffix: '+' },
         { el: statNumsRef.current[1], target: 4, suffix: '' },
         { el: statNumsRef.current[2], target: 3, suffix: '' },
       ]
-
       targets.forEach(({ el, target, suffix }) => {
         if (!el) return
         const obj = { val: 0 }
         gsap.to(obj, {
-          val: target,
-          duration: 2,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: statsRef.current,
-            start: 'top 80%',
-          },
-          onUpdate: () => {
-            el.textContent = `${Math.round(obj.val)}${suffix}`
-          },
+          val: target, duration: 2.2, ease: 'power2.out',
+          scrollTrigger: { trigger: statsRef.current, start: 'top 80%' },
+          onUpdate: () => { el.textContent = `${Math.round(obj.val)}${suffix}` },
         })
       })
     }, sectionRef)

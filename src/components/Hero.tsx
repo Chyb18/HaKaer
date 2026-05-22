@@ -4,6 +4,22 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const COLORS = [
+  '99, 102, 241',
+  '139, 92, 246',
+  '6, 182, 212',
+  '129, 140, 248',
+  '52, 211, 153',
+]
+
+interface Particle {
+  x: number; y: number
+  vx: number; vy: number
+  size: number; alpha: number
+  color: string
+  origSize: number
+}
+
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -12,22 +28,32 @@ export default function Hero() {
   const ctaRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const mouseRef = useRef({ x: 0.5, y: 0.5 })
 
+  // ---- Entrance animation with text split ----
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    tl.from(titleRef.current, { y: 80, opacity: 0, duration: 1 })
-      .from(subtitleRef.current, { y: 40, opacity: 0, duration: 0.8 }, '-=0.4')
+
+    // Title characters stagger
+    const chars = titleRef.current?.children
+    if (chars?.length) {
+      tl.from(chars, {
+        y: 100, opacity: 0, rotateX: -40,
+        duration: 1, stagger: 0.1,
+        ease: 'power4.out',
+      })
+    }
+
+    tl.from(subtitleRef.current, { y: 40, opacity: 0, duration: 0.8 }, '-=0.3')
       .from(descRef.current, { y: 30, opacity: 0, duration: 0.8 }, '-=0.4')
       .from(ctaRef.current, { y: 20, opacity: 0, duration: 0.6 }, '-=0.3')
   }, [])
 
-  // Parallax fade on scroll
+  // ---- Parallax fade on scroll ----
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.to(contentRef.current, {
-        y: 80,
-        opacity: 0,
-        scale: 0.95,
+        y: 100, opacity: 0, scale: 0.92,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: containerRef.current,
@@ -40,7 +66,19 @@ export default function Hero() {
     return () => ctx.revert()
   }, [])
 
-  // Particle background
+  // ---- Mouse tracking ----
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      mouseRef.current = {
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      }
+    }
+    window.addEventListener('mousemove', handleMouse, { passive: true })
+    return () => window.removeEventListener('mousemove', handleMouse)
+  }, [])
+
+  // ---- Enhanced particle system ----
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -48,7 +86,9 @@ export default function Hero() {
     if (!ctx) return
 
     let animationId: number
-    const particles: { x: number; y: number; vx: number; vy: number; size: number; alpha: number }[] = []
+    const particles: Particle[] = []
+    const PARTICLE_COUNT = 130
+    const CONNECTION_DIST = 160
 
     const resize = () => {
       canvas.width = window.innerWidth
@@ -57,46 +97,91 @@ export default function Hero() {
     resize()
     window.addEventListener('resize', resize)
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const size = Math.random() * 3.5 + 0.5
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
-        size: Math.random() * 3 + 1,
-        alpha: Math.random() * 0.5 + 0.1,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        size,
+        origSize: size,
+        alpha: Math.random() * 0.5 + 0.15,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
       })
     }
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      particles.forEach((p) => {
+      const w = canvas.width
+      const h = canvas.height
+      const mx = mouseRef.current.x * w
+      const my = mouseRef.current.y * h
+
+      ctx.clearRect(0, 0, w, h)
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
+
+        // Mouse interaction — gentle attraction
+        const dx = mx - p.x
+        const dy = my - p.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < 200) {
+          const force = (1 - dist / 200) * 0.15
+          p.vx += dx * force * 0.01
+          p.vy += dy * force * 0.01
+        }
+
+        // Damping
+        p.vx *= 0.995
+        p.vy *= 0.995
+
         p.x += p.vx
         p.y += p.vy
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1
+
+        // Wrap around edges
+        if (p.x < -20) p.x = w + 20
+        if (p.x > w + 20) p.x = -20
+        if (p.y < -20) p.y = h + 20
+        if (p.y > h + 20) p.y = -20
+
+        // Draw particle
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`
+        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`
         ctx.fill()
-      })
+
+        // Glow for larger particles
+        if (p.size > 2.5) {
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2)
+          ctx.fillStyle = `rgba(${p.color}, ${p.alpha * 0.12})`
+          ctx.fill()
+        }
+      }
+
+      // Connection lines
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x
           const dy = particles[i].y - particles[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 150) {
+          const dist = dx * dx + dy * dy
+          if (dist < CONNECTION_DIST * CONNECTION_DIST) {
+            const alpha = 0.06 * (1 - Math.sqrt(dist) / CONNECTION_DIST)
             ctx.beginPath()
             ctx.moveTo(particles[i].x, particles[i].y)
             ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(100, 180, 255, ${0.08 * (1 - dist / 150)})`
+            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`
+            ctx.lineWidth = 0.6
             ctx.stroke()
           }
         }
       }
+
       animationId = requestAnimationFrame(animate)
     }
     animate()
+
     return () => {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', resize)
@@ -113,10 +198,12 @@ export default function Hero() {
           27 届毕业生 · 前端开发
         </div>
         <h1 ref={titleRef} className="hero-title">
-          陈宇彬
+          {'陈宇彬'.split('').map((char, i) => (
+            <span key={i} className="hero-title-char">{char}</span>
+          ))}
         </h1>
         <p ref={subtitleRef} className="hero-subtitle">
-          <span className="typed-text">Frontend Developer</span>
+          Frontend Developer
         </p>
         <p ref={descRef} className="hero-desc">
           热爱构建优雅、高性能的 Web 应用。拥有 14+ 个项目经验，

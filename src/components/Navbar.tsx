@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -15,16 +15,16 @@ const navLinks = [
 export default function Navbar() {
   const navRef = useRef<HTMLElement>(null)
   const linksRef = useRef<HTMLUListElement>(null)
+  const [activeSection, setActiveSection] = useState('hero')
 
+  // Entrance + scroll hide/show
   useEffect(() => {
     const nav = navRef.current
     if (!nav) return
 
     const ctx = gsap.context(() => {
-      // Entrance animation
       gsap.from(nav, { y: -80, opacity: 0, duration: 0.8, ease: 'power3.out' })
 
-      // Hide/show on scroll direction
       let lastScroll = 0
       ScrollTrigger.create({
         onUpdate: (self) => {
@@ -38,7 +38,6 @@ export default function Navbar() {
         },
       })
 
-      // Background opacity based on scroll
       ScrollTrigger.create({
         start: 'top top',
         end: 'bottom top',
@@ -50,6 +49,23 @@ export default function Navbar() {
     })
 
     return () => ctx.revert()
+  }, [])
+
+  // Active section detection via IntersectionObserver
+  useEffect(() => {
+    const sections = document.querySelectorAll('section[id]')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id)
+          }
+        })
+      },
+      { threshold: 0.3, rootMargin: '-10% 0px -10% 0px' }
+    )
+    sections.forEach((s) => observer.observe(s))
+    return () => observer.disconnect()
   }, [])
 
   const scrollTo = (href: string) => {
@@ -64,11 +80,19 @@ export default function Navbar() {
           哈卡尔<span className="logo-dot">.</span>
         </span>
         <ul ref={linksRef} className="navbar-links">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <button onClick={() => scrollTo(link.href)}>{link.label}</button>
-            </li>
-          ))}
+          {navLinks.map((link) => {
+            const sectionId = link.href.replace('#', '')
+            return (
+              <li key={link.href}>
+                <button
+                  className={activeSection === sectionId ? 'nav-link-active' : ''}
+                  onClick={() => scrollTo(link.href)}
+                >
+                  {link.label}
+                </button>
+              </li>
+            )
+          })}
         </ul>
       </div>
     </nav>

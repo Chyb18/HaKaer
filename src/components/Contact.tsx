@@ -15,38 +15,23 @@ export default function Contact() {
     const ctx = gsap.context(() => {
       gsap.from(titleRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
+        y: 40, opacity: 0, scale: 0.95,
+        duration: 0.8, ease: 'power4.out',
       })
 
       gsap.from(textRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 75%' },
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
+        y: 30, opacity: 0, duration: 0.8, ease: 'power3.out',
       })
 
-      // Contact items stagger from left
       gsap.from(infoRef.current?.children ?? [], {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 72%' },
-        x: -30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
+        x: -30, opacity: 0, duration: 0.6, stagger: 0.1, ease: 'power3.out',
       })
 
-      // Social links stagger from bottom
       gsap.from(socialRef.current?.children ?? [], {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 68%' },
-        y: 30,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.08,
-        ease: 'back.out(1.7)',
+        y: 30, opacity: 0, duration: 0.5, stagger: 0.08, ease: 'back.out(1.7)',
       })
     }, sectionRef)
     return () => ctx.revert()

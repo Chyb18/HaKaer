@@ -43,10 +43,8 @@ export default function Skills() {
     const ctx = gsap.context(() => {
       gsap.from(titleRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
+        y: 40, opacity: 0, scale: 0.95,
+        duration: 0.8, ease: 'power4.out',
       })
     }, sectionRef)
     return () => ctx.revert()
@@ -57,58 +55,39 @@ export default function Skills() {
       const groups = groupsRef.current?.children
       if (!groups) return
 
-      // Groups stagger in
       gsap.from(groups, {
-        scrollTrigger: {
-          trigger: groupsRef.current,
-          start: 'top 80%',
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.7,
-        stagger: 0.15,
-        ease: 'power3.out',
+        scrollTrigger: { trigger: groupsRef.current, start: 'top 80%' },
+        y: 40, opacity: 0,
+        duration: 0.8, stagger: 0.12,
+        ease: 'power4.out',
       })
 
-      // Skill bars animate with scrub
       const allBars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
       if (!allBars) return
 
-      gsap.fromTo(
-        allBars,
+      gsap.fromTo(allBars,
         { width: '0%' },
         {
-          width: (i, el) => el.dataset.level + '%',
-          duration: 1.5,
-          stagger: 0.05,
+          width: (_, el) => (el as HTMLElement).dataset.level + '%',
+          duration: 1.5, stagger: 0.04,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: groupsRef.current,
-            start: 'top 75%',
-            end: '+=400',
-            scrub: 1,
+            start: 'top 75%', end: '+=400', scrub: 1,
           },
         }
       )
 
-      // Counter animation for percentage numbers
       allBars.forEach((bar) => {
-        const level = parseInt(bar.dataset.level || '0')
+        const level = parseInt((bar as HTMLElement).dataset.level || '0')
         const parent = bar.closest('.skill-item')
         const numEl = parent?.querySelector('.skill-level')
         if (!numEl) return
         const obj = { val: 0 }
         gsap.to(obj, {
-          val: level,
-          duration: 1.5,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: bar,
-            start: 'top 85%',
-          },
-          onUpdate: () => {
-            numEl.textContent = `${Math.round(obj.val)}%`
-          },
+          val: level, duration: 1.5, ease: 'power2.out',
+          scrollTrigger: { trigger: bar, start: 'top 85%' },
+          onUpdate: () => { numEl.textContent = `${Math.round(obj.val)}%` },
         })
       })
     }, groupsRef)
@@ -121,7 +100,6 @@ export default function Skills() {
         <h2 ref={titleRef} className="section-title">
           <span className="section-number">03.</span> 技能栈
         </h2>
-
         <div ref={groupsRef} className="skills-grid">
           {skillCategories.map((group) => (
             <div key={group.label} className="skill-group">
