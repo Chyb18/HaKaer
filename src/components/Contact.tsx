@@ -12,6 +12,11 @@ export default function Contact() {
   const socialRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Refresh ScrollTrigger after layout settles
+    const refresh = () => ScrollTrigger.refresh()
+    requestAnimationFrame(refresh)
+    const timer = setTimeout(refresh, 300)
+
     const ctx = gsap.context(() => {
       gsap.from(titleRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
@@ -34,7 +39,11 @@ export default function Contact() {
         y: 30, opacity: 0, duration: 0.5, stagger: 0.08, ease: 'back.out(1.7)',
       })
     }, sectionRef)
-    return () => ctx.revert()
+
+    return () => {
+      clearTimeout(timer)
+      ctx.revert()
+    }
   }, [])
 
   return (

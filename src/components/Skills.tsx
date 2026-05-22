@@ -40,10 +40,13 @@ export default function Skills() {
   const groupsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      ScrollTrigger.refresh()
+    // Refresh ScrollTrigger after layout settles (other pinned sections affect positions)
+    const refresh = () => ScrollTrigger.refresh()
+    requestAnimationFrame(refresh)
+    const timer = setTimeout(refresh, 300)
 
-      // Section title reveal
+    const ctx = gsap.context(() => {
+      // Title reveal
       gsap.from(titleRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
         y: 40, opacity: 0, scale: 0.95,
@@ -61,7 +64,7 @@ export default function Skills() {
         ease: 'power4.out',
       })
 
-      // Skill bars animate width
+      // Skill bars animate
       const allBars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
       if (!allBars) return
 
@@ -73,14 +76,12 @@ export default function Skills() {
           ease: 'power3.out',
           scrollTrigger: {
             trigger: groupsRef.current,
-            start: 'top 80%',
-            end: '+=300',
-            scrub: 1.5,
+            start: 'top 80%', end: '+=300', scrub: 1.5,
           },
         }
       )
 
-      // Counter animation for percentage numbers
+      // Counter
       allBars.forEach((bar) => {
         const level = parseInt((bar as HTMLElement).dataset.level || '0')
         const parent = bar.closest('.skill-item')
@@ -95,7 +96,10 @@ export default function Skills() {
       })
     }, sectionRef)
 
-    return () => ctx.revert()
+    return () => {
+      clearTimeout(timer)
+      ctx.revert()
+    }
   }, [])
 
   return (
