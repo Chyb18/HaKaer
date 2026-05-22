@@ -168,6 +168,8 @@ export default function Projects() {
               } as React.CSSProperties}
             >
               <div className="card-glow" />
+              <div className="card-corner" />
+              <div className="card-fade" />
               <div className="card-inner">
                 <div className="card-header">
                   <span className="card-num">

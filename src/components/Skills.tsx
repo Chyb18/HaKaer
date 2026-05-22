@@ -41,27 +41,27 @@ export default function Skills() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      ScrollTrigger.refresh()
+
+      // Section title reveal
       gsap.from(titleRef.current, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
         y: 40, opacity: 0, scale: 0.95,
         duration: 0.8, ease: 'power4.out',
       })
-    }, sectionRef)
-    return () => ctx.revert()
-  }, [])
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
       const groups = groupsRef.current?.children
       if (!groups) return
 
+      // Groups stagger in
       gsap.from(groups, {
-        scrollTrigger: { trigger: groupsRef.current, start: 'top 80%' },
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 78%' },
         y: 40, opacity: 0,
-        duration: 0.8, stagger: 0.12,
+        duration: 0.8, stagger: 0.15,
         ease: 'power4.out',
       })
 
+      // Skill bars animate width
       const allBars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
       if (!allBars) return
 
@@ -69,15 +69,18 @@ export default function Skills() {
         { width: '0%' },
         {
           width: (_, el) => (el as HTMLElement).dataset.level + '%',
-          duration: 1.5, stagger: 0.04,
+          duration: 1.8, stagger: 0.06,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: groupsRef.current,
-            start: 'top 75%', end: '+=400', scrub: 1,
+            start: 'top 80%',
+            end: '+=300',
+            scrub: 1.5,
           },
         }
       )
 
+      // Counter animation for percentage numbers
       allBars.forEach((bar) => {
         const level = parseInt((bar as HTMLElement).dataset.level || '0')
         const parent = bar.closest('.skill-item')
@@ -85,12 +88,13 @@ export default function Skills() {
         if (!numEl) return
         const obj = { val: 0 }
         gsap.to(obj, {
-          val: level, duration: 1.5, ease: 'power2.out',
+          val: level, duration: 2, ease: 'power2.out',
           scrollTrigger: { trigger: bar, start: 'top 85%' },
           onUpdate: () => { numEl.textContent = `${Math.round(obj.val)}%` },
         })
       })
-    }, groupsRef)
+    }, sectionRef)
+
     return () => ctx.revert()
   }, [])
 
