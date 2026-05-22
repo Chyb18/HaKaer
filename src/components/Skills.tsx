@@ -6,8 +6,8 @@ const groups = [
     title: '前端框架',
     skills: [
       { name: 'Vue3', level: 92 },
-      { name: 'React', level: 85 },
-      { name: 'TypeScript', level: 88 },
+      { name: 'React', level: 70 },
+      { name: 'TypeScript', level:75 },
       { name: 'JavaScript', level: 90 },
     ],
   },
@@ -15,17 +15,17 @@ const groups = [
     title: 'UI / 可视化',
     skills: [
       { name: 'ECharts', level: 90 },
-      { name: 'D3 / Sankey', level: 75 },
+      { name: 'D3 / Sankey', level: 70 },
       { name: 'Element Plus', level: 92 },
-      { name: 'GSAP', level: 82 },
+      { name: 'GSAP', level: 70 },
     ],
   },
   {
     title: '工程化 / 其他',
     skills: [
-      { name: 'Vite / Webpack', level: 85 },
+      { name: 'Vite / Webpack', level: 70 },
       { name: 'Pinia / Vuex', level: 88 },
-      { name: 'WebSocket', level: 82 },
+      { name: 'WebSocket', level: 70 },
       { name: 'Uni-app', level: 80 },
     ],
   },
