@@ -19,17 +19,19 @@ npm run dev
 
 线上地址：https://Chyb18.github.io/HaKaer/
 
-**必须在仓库 Settings → Pages 中选择 Source: GitHub Actions**（不要选 Deploy from branch `master`），否则会直接发布源码里的 `index.html`，浏览器会 404 请求 `/src/main.tsx`。
+仓库根目录的 `index.html`、`assets/` 为**构建产物**（由 CI 或下面命令生成）。本地开发入口为 `index.dev.html`（`npm run dev` 会自动使用）。
 
-推送到 `master` 后会自动执行 `.github/workflows/deploy.yml` 构建并发布。
+推送到 `master` 后，GitHub Actions 会构建并把产物提交到根目录（适配「从 master 分支发布」的 Pages 设置）。
 
-也可手动发布到 `gh-pages` 分支：
+手动更新线上文件：
 
 ```bash
-npm run deploy
+npm run build
+npm run pages:sync
+git add index.html assets .nojekyll
+git commit -m "chore(pages): update built site"
+git push
 ```
-
-若使用 `gh-pages` 分支作为 Pages 源，请在 Settings → Pages 里选 branch `gh-pages` / root。
 
 ## 内容来源
 
