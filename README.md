@@ -21,7 +21,9 @@ npm run dev
 
 仓库根目录的 `index.html`、`assets/` 为**构建产物**（由 CI 或下面命令生成）。本地开发入口为 `index.dev.html`（`npm run dev` 会自动使用）。
 
-推送到 `master` 后，GitHub Actions 会构建并把产物提交到根目录（适配「从 master 分支发布」的 Pages 设置）。
+推送到 `master` 后，GitHub Actions 会构建并部署。
+
+**Settings → Pages → Source 请选 GitHub Actions**（推荐）。若选「Deploy from branch」，请用 `master` + `/ (root)`，且根目录需已有构建好的 `index.html` 与 `assets/`。
 
 手动更新线上文件：
 
