@@ -16,6 +16,4 @@ export interface Project {
   highlights: string[]
   techStack: string[]
   category: ProjectCategory
-  role?: string
-  status?: 'completed' | 'in-progress'
 }

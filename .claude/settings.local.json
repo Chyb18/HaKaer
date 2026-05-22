@@ -1,27 +1,13 @@
 {
   "permissions": {
     "allow": [
+      "Bash(grep -q \"^\\\\.env$\" .gitignore)",
       "Bash(git add *)",
-      "Bash(git merge *)",
-      "Bash(git checkout *)",
       "Bash(git commit *)",
-      "Bash(git push *)",
-      "Bash(gh auth *)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' 'https://api.github.com/repos/Chyb18/HaKaer/actions/runs?per_page=1&status=in_progress')",
-      "Bash(python3 -c ' *)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/actions/runs?per_page=1)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/check-runs/77378335857/annotations)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/actions/runs/26287747733/jobs)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -L -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/actions/runs/26287747733/logs)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/actions/runs/26287747733/logs -o /dev/null -w '%{redirect_url}')",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/actions/jobs/77379570667/logs -o /dev/null -w '%{redirect_url}')",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 'https://productionresultssa2.blob.core.windows.net/actions-results/cbbcbb08-8609-440f-a5ae-8e66827bb437/workflow-job-run-54f78291-1ebd-5e4e-af12-3fcdbc9c8c28/logs/job/job-logs.txt?rsct=text%2Fplain&se=2026-05-22T12%3A39%3A23Z&sig=zwW5D6huUpVXiiy9zibGryj7eEMrYCOYhwoeBIFRu%2B8%3D&ske=2026-05-22T15%3A26%3A07Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2026-05-22T11%3A26%3A07Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-11-05&sp=r&spr=https&sr=b&st=2026-05-22T12%3A29%3A18Z&sv=2025-11-05')",
-      "Bash(npm install *)",
-      "Bash(npm run *)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 -H 'Authorization: token __CMDSUB_OUTPUT__' https://api.github.com/repos/Chyb18/HaKaer/actions/runs/26287866995)",
-      "Bash(curl -s --proxy http://127.0.0.1:7897 https://chyb18.github.io/HaKaer/)",
-      "Bash(git log *)",
-      "Bash(git rm *)"
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git stash *)",
+      "Bash(git branch *)"
     ]
   }
 }
