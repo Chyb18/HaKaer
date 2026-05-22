@@ -17,7 +17,7 @@ export default function Navbar() {
   const linksRef = useRef<HTMLUListElement>(null)
   const [activeSection, setActiveSection] = useState('hero')
 
-  // Entrance + scroll hide/show
+  // Entrance + scroll hide/show (floating pill)
   useEffect(() => {
     const nav = navRef.current
     if (!nav) return
@@ -30,20 +30,11 @@ export default function Navbar() {
         onUpdate: (self) => {
           const st = self.scroll()
           if (st > lastScroll && st > 100) {
-            gsap.to(nav, { y: -80, opacity: 0, duration: 0.3, ease: 'power2.out' })
+            gsap.to(nav, { y: -80, opacity: 0, duration: 0.35, ease: 'power2.out' })
           } else {
-            gsap.to(nav, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' })
+            gsap.to(nav, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' })
           }
           lastScroll = st
-        },
-      })
-
-      ScrollTrigger.create({
-        start: 'top top',
-        end: 'bottom top',
-        onUpdate: (self) => {
-          const opacity = Math.min(self.progress * 1.5, 1)
-          gsap.set(nav, { background: `rgba(10, 10, 26, ${0.5 + opacity * 0.4})` })
         },
       })
     })

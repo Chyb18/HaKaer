@@ -33,12 +33,35 @@ const cardThemes = [
   { p: '#2dd4bf', s: '#14b8a6', c: 'rgba(45,212,191,0.04)' },
 ]
 
+/** 根据滚动方向在相邻吸附点之间选择目标卡片 */
+function resolveSnapIndex(progress: number, direction: number, points: number[]) {
+  if (points.length <= 1) return 0
+
+  let index = 0
+  for (let i = 0; i < points.length - 1; i++) {
+    const mid = (points[i] + points[i + 1]) / 2
+    if (progress >= mid) index = i + 1
+  }
+
+  if (direction > 0 && index < points.length - 1) {
+    const zone = (points[index + 1] - points[index]) * 0.22
+    if (progress > points[index] + zone) index += 1
+  } else if (direction < 0 && index > 0) {
+    const zone = (points[index] - points[index - 1]) * 0.22
+    if (progress < points[index] - zone) index -= 1
+  }
+
+  return gsap.utils.clamp(0, points.length - 1, index)
+}
+
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const filterRef = useRef<HTMLDivElement>(null)
   const deckRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
+  const deckScrollRef = useRef<ScrollTrigger | null>(null)
+  const snapPointsRef = useRef<number[]>([])
   const [activeCategory, setActiveCategory] = useState('all')
   const [curIndex, setCurIndex] = useState(0)
 
@@ -61,70 +84,144 @@ export default function Projects() {
     return () => ctx.revert()
   }, [])
 
-  // Flipping card deck scroll animation
+  const scrollToCard = (index: number) => {
+    const st = deckScrollRef.current
+    const points = snapPointsRef.current
+    if (!st || points[index] === undefined) return
+
+    const targetY = st.start + points[index] * (st.end - st.start)
+    const proxy = { y: window.scrollY }
+    gsap.to(proxy, {
+      y: targetY,
+      duration: 0.55,
+      ease: 'power3.inOut',
+      overwrite: 'auto',
+      onUpdate: () => window.scrollTo(0, proxy.y),
+    })
+  }
+
+  // Flipping card deck scroll animation (snap to center, bidirectional)
   useEffect(() => {
     const cards = deckRef.current?.children
     if (!cards || cards.length === 0) return
 
+    setCurIndex(0)
+    deckScrollRef.current = null
+    snapPointsRef.current = []
+
     const ctx = gsap.context(() => {
-      // Initial state: first card visible, rest spread out to the right
-      gsap.set(cards[0], { opacity: 1, rotationY: 0, scale: 1, x: 0, z: 0 })
-      for (let i = 1; i < cards.length; i++) {
-        gsap.set(cards[i], {
-          opacity: 0, rotationY: 45, scale: 0.8, x: 200, z: -200,
-        })
+      const cardEase = { transformOrigin: '50% 50%', force3D: true }
+      const incoming = {
+        ...cardEase,
+        opacity: 0,
+        rotationY: 58,
+        scale: 0.76,
+        x: 320,
+        y: 28,
+        z: -380,
+        filter: 'blur(8px)',
       }
+      const center = {
+        ...cardEase,
+        opacity: 1,
+        rotationY: 0,
+        scale: 1,
+        x: 0,
+        y: 0,
+        z: 0,
+        filter: 'blur(0px)',
+      }
+      const exit = {
+        ...cardEase,
+        opacity: 0,
+        rotationY: -58,
+        scale: 0.76,
+        x: -320,
+        y: -20,
+        z: -380,
+        filter: 'blur(8px)',
+      }
+
+      gsap.set(cards, { transformOrigin: '50% 50%', force3D: true })
+      gsap.set(cards[0], { ...center, zIndex: 100 })
+      for (let i = 1; i < cards.length; i++) {
+        gsap.set(cards[i], { ...incoming, zIndex: 10 + i })
+      }
+
+      const snapProgress: number[] = []
 
       const tl = gsap.timeline({
         onUpdate: () => {
           const prog = tl.progress()
-          const idx = Math.min(Math.floor(prog * cards.length), cards.length - 1)
-          setCurIndex(idx)
+          if (!snapProgress.length) return
+          setCurIndex(resolveSnapIndex(prog, 0, snapProgress))
         },
       })
 
-      const step = 1 / cards.length
+      const segment = 1 / cards.length
+      const flipIn = segment * 0.28
+      const hold = segment * 0.44
+      const flipOut = segment * 0.28
+      const overlap = flipOut * 0.42
 
       for (let i = 0; i < cards.length; i++) {
-        // Flip in: slide from right → center with 3D rotation
         if (i > 0) {
-          tl.to(cards[i], {
-            opacity: 1, rotationY: 0, scale: 1, x: 0, z: 0,
-            duration: step * 0.55,
-            ease: 'power3.out',
-          })
+          tl.fromTo(
+            cards[i],
+            incoming,
+            { ...center, duration: flipIn, ease: 'power4.out' },
+            `-=${overlap}`,
+          )
+          tl.set(cards[i], { zIndex: 100 + i }, '<')
         }
 
-        // Flip out: rotate + slide left & fade
+        tl.addLabel(`card-${i}`)
+        tl.to({}, { duration: hold })
+
         if (i < cards.length - 1) {
-          tl.to(cards[i], {
-            opacity: 0, rotationY: -45, scale: 0.8, x: -200, z: -200,
-            duration: step * 0.45,
-            ease: 'power2.in',
-          })
+          tl.to(cards[i], { ...exit, duration: flipOut, ease: 'power3.in' })
+          tl.set(cards[i], { zIndex: 5 + i })
         }
       }
 
-      ScrollTrigger.create({
+      const duration = tl.duration()
+      for (let i = 0; i < cards.length; i++) {
+        const t = tl.labels[`card-${i}`] as number
+        snapProgress.push(duration > 0 ? t / duration : 0)
+      }
+      snapPointsRef.current = snapProgress
+
+      const st = ScrollTrigger.create({
         trigger: sectionRef.current,
         start: 'top top',
-        end: `+=${cards.length * 90}%`,
+        end: () => `+=${window.innerHeight * cards.length * 0.85}`,
         pin: true,
-        scrub: 1.2,
+        scrub: 0.45,
         invalidateOnRefresh: true,
         anticipatePin: 1,
         animation: tl,
+        snap: cards.length > 1
+          ? {
+              snapTo: (progress, self) => {
+                const idx = resolveSnapIndex(progress, self?.direction ?? 0, snapProgress)
+                return snapProgress[idx]
+              },
+              duration: { min: 0.28, max: 0.55 },
+              delay: 0.04,
+              ease: 'power3.out',
+              inertia: false,
+            }
+          : undefined,
       })
+      deckScrollRef.current = st
 
-      // Refresh ScrollTrigger after a frame to ensure correct calculations
       requestAnimationFrame(() => ScrollTrigger.refresh())
-    })
+    }, sectionRef)
 
     return () => {
+      deckScrollRef.current = null
+      snapPointsRef.current = []
       ctx.revert()
-      ScrollTrigger.getAll().forEach((st) => {
-        if (st.trigger === sectionRef.current) st.kill()
-      })
     }
   }, [filtered.length, activeCategory])
 
@@ -157,7 +254,7 @@ export default function Projects() {
           return (
             <article
               key={project.id}
-              className="project-card"
+              className={`project-card${idx === curIndex ? ' is-active' : ''}`}
               style={{
                 '--card-primary': t.p,
                 '--card-secondary': t.s,
@@ -205,12 +302,15 @@ export default function Projects() {
         </span>
         <div className="card-indicator-dots">
           {filtered.map((_, i) => (
-            <span
+            <button
               key={i}
+              type="button"
+              aria-label={`跳转到第 ${i + 1} 张卡片`}
               className={`indicator-dot ${i === curIndex ? 'active' : ''}`}
               style={i === curIndex ? {
                 backgroundColor: cardThemes[curIndex % cardThemes.length].p,
               } : undefined}
+              onClick={() => scrollToCard(i)}
             />
           ))}
         </div>

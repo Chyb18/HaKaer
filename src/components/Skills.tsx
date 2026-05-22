@@ -4,9 +4,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const coreTags = ['Vue3', 'React', 'TypeScript', 'ECharts', 'GSAP', 'Vite']
+
 const skillCategories = [
   {
     label: '前端框架',
+    icon: '⚡',
+    accent: '#6366f1',
     skills: [
       { name: 'Vue3', level: 92 },
       { name: 'React', level: 85 },
@@ -16,6 +20,8 @@ const skillCategories = [
   },
   {
     label: 'UI / 可视化',
+    icon: '◈',
+    accent: '#06b6d4',
     skills: [
       { name: 'ECharts', level: 90 },
       { name: 'D3.js / Sankey', level: 75 },
@@ -25,6 +31,8 @@ const skillCategories = [
   },
   {
     label: '工程化 / 其他',
+    icon: '⚙',
+    accent: '#8b5cf6',
     skills: [
       { name: 'Vite / Webpack', level: 85 },
       { name: 'Pinia / Vuex', level: 88 },
@@ -37,62 +45,77 @@ const skillCategories = [
 export default function Skills() {
   const sectionRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
+  const tagsRef = useRef<HTMLDivElement>(null)
   const groupsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Refresh ScrollTrigger after layout settles (other pinned sections affect positions)
     const refresh = () => ScrollTrigger.refresh()
     requestAnimationFrame(refresh)
     const timer = setTimeout(refresh, 300)
 
     const ctx = gsap.context(() => {
-      // Title reveal
       gsap.from(titleRef.current, {
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
-        y: 40, opacity: 0, scale: 0.95,
-        duration: 0.8, ease: 'power4.out',
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 82%' },
+        y: 36, opacity: 0, scale: 0.96,
+        duration: 0.75, ease: 'power4.out',
       })
 
-      const groups = groupsRef.current?.children
-      if (!groups) return
+      const tags = tagsRef.current?.children
+      if (tags?.length) {
+        gsap.from(tags, {
+          scrollTrigger: { trigger: tagsRef.current, start: 'top 88%' },
+          y: 16, opacity: 0, scale: 0.9,
+          duration: 0.5, stagger: 0.06, ease: 'back.out(1.6)',
+        })
+      }
 
-      // Groups stagger in
+      const groups = groupsRef.current?.children
+      if (!groups?.length) return
+
       gsap.from(groups, {
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 78%' },
-        y: 40, opacity: 0,
-        duration: 0.8, stagger: 0.15,
+        scrollTrigger: { trigger: groupsRef.current, start: 'top 85%' },
+        y: 48, opacity: 0, rotateX: 8,
+        duration: 0.85, stagger: 0.12,
         ease: 'power4.out',
       })
 
-      // Skill bars animate
       const allBars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
-      if (!allBars) return
-
-      gsap.fromTo(allBars,
-        { width: '0%' },
-        {
-          width: (_, el) => (el as HTMLElement).dataset.level + '%',
-          duration: 1.8, stagger: 0.06,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: groupsRef.current,
-            start: 'top 80%', end: '+=300', scrub: 1.5,
-          },
-        }
-      )
-
-      // Counter
+      if (!allBars?.length) return
       allBars.forEach((bar) => {
-        const level = parseInt((bar as HTMLElement).dataset.level || '0')
-        const parent = bar.closest('.skill-item')
-        const numEl = parent?.querySelector('.skill-level')
-        if (!numEl) return
+        const el = bar as HTMLElement
+        const level = el.dataset.level || '0'
+        const numEl = el.closest('.skill-item')?.querySelector('.skill-level')
         const obj = { val: 0 }
-        gsap.to(obj, {
-          val: level, duration: 2, ease: 'power2.out',
-          scrollTrigger: { trigger: bar, start: 'top 85%' },
-          onUpdate: () => { numEl.textContent = `${Math.round(obj.val)}%` },
-        })
+
+        gsap.fromTo(el,
+          { width: '0%' },
+          {
+            width: `${level}%`,
+            duration: 1.2,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+          },
+        )
+
+        if (numEl) {
+          gsap.to(obj, {
+            val: parseInt(level, 10),
+            duration: 1.2,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+            onUpdate: () => {
+              numEl.textContent = `${Math.round(obj.val)}%`
+            },
+          })
+        }
       })
     }, sectionRef)
 
@@ -104,14 +127,30 @@ export default function Skills() {
 
   return (
     <section id="skills" ref={sectionRef} className="skills">
+      <div className="section-grid" />
+      <div className="deco-dots deco-dots-2" />
       <div className="section-container">
         <h2 ref={titleRef} className="section-title">
           <span className="section-number">03.</span> 技能栈
         </h2>
+
+        <div ref={tagsRef} className="skills-tags">
+          {coreTags.map((tag) => (
+            <span key={tag} className="skill-tag-pill">{tag}</span>
+          ))}
+        </div>
+
         <div ref={groupsRef} className="skills-grid">
           {skillCategories.map((group) => (
-            <div key={group.label} className="skill-group">
-              <h3 className="skill-group-title">{group.label}</h3>
+            <div
+              key={group.label}
+              className="skill-group"
+              style={{ '--group-accent': group.accent } as React.CSSProperties}
+            >
+              <h3 className="skill-group-title">
+                <span className="skill-group-icon" aria-hidden>{group.icon}</span>
+                {group.label}
+              </h3>
               {group.skills.map((skill) => (
                 <div key={skill.name} className="skill-item">
                   <div className="skill-info">
