@@ -1,102 +1,116 @@
 import { useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, initGsap, revealUp } from '../lib/gsap'
 
-gsap.registerPlugin(ScrollTrigger)
-
-const skillCategories = [
+const groups = [
   {
-    label: '前端框架',
+    title: '前端框架',
     skills: [
       { name: 'Vue3', level: 92 },
-      { name: 'React', level: 85 },
-      { name: 'TypeScript', level: 88 },
+      { name: 'React', level: 70 },
+      { name: 'TypeScript', level: 70 },
       { name: 'JavaScript', level: 90 },
     ],
   },
   {
-    label: 'UI / 可视化',
+    title: 'UI / 可视化',
     skills: [
       { name: 'ECharts', level: 90 },
-      { name: 'D3.js / Sankey', level: 75 },
+      { name: 'D3 / Sankey', level: 75 },
       { name: 'Element Plus', level: 92 },
-      { name: 'GSAP', level: 80 },
+      { name: 'GSAP', level: 60 },
     ],
   },
   {
-    label: '工程化 / 其他',
+    title: '工程化 / 其他',
     skills: [
-      { name: 'Vite / Webpack', level: 85 },
-      { name: 'Pinia / Vuex', level: 88 },
-      { name: 'WebSocket', level: 82 },
-      { name: 'Axios', level: 90 },
+      { name: 'Vite / Webpack', level: 70 },
+      { name: 'Pinia / Vuex', level: 80 },
+      { name: 'WebSocket', level:70 },
+      { name: 'Uni-app', level: 80 },
     ],
   },
 ]
 
+const tags = ['Vue3', 'React', 'TypeScript', 'ECharts', 'GSAP', 'WebSocket', 'Canvas']
+
 export default function Skills() {
   const sectionRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLHeadingElement>(null)
-  const groupsRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    initGsap()
     const ctx = gsap.context(() => {
-      gsap.from(titleRef.current, {
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
-        y: 40,
+      revealUp('.skills-intro > *', sectionRef.current, { start: 'top 80%', stagger: 0.08 })
+
+      gsap.from('.skill-tag', {
+        scrollTrigger: { trigger: '.skill-tags', start: 'top 88%' },
+        scale: 0.8,
         opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
+        duration: 0.5,
+        stagger: 0.05,
+        ease: 'back.out(2)',
       })
+
+      gsap.from('.skill-card', {
+        scrollTrigger: { trigger: gridRef.current, start: 'top 85%' },
+        y: 64,
+        opacity: 0,
+        rotateY: 8,
+        transformOrigin: '50% 50%',
+        duration: 0.85,
+        stagger: 0.14,
+        ease: 'power4.out',
+      })
+
+      const bars = sectionRef.current?.querySelectorAll('.skill-bar-fill')
+      if (bars?.length) {
+        gsap.fromTo(
+          bars,
+          { width: '0%' },
+          {
+            width: (_, el) => `${(el as HTMLElement).dataset.level}%`,
+            duration: 1.4,
+            stagger: 0.08,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: 'top 75%',
+              end: 'top 35%',
+              scrub: 0.9,
+            },
+          },
+        )
+      }
     }, sectionRef)
     return () => ctx.revert()
   }, [])
 
-  useEffect(() => {
-    const bars = groupsRef.current?.querySelectorAll('.skill-bar-fill')
-    if (!bars) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const bar = entry.target as HTMLElement
-            const level = bar.dataset.level
-            gsap.to(bar, {
-              width: `${level}%`,
-              duration: 1.2,
-              ease: 'power3.out',
-            })
-            observer.unobserve(bar)
-          }
-        })
-      },
-      { threshold: 0.3 }
-    )
-    bars.forEach((bar) => observer.observe(bar))
-    return () => observer.disconnect()
-  }, [])
-
   return (
-    <section id="skills" ref={sectionRef} className="skills">
-      <div className="section-container">
-        <h2 ref={titleRef} className="section-title">
-          <span className="section-number">03.</span> 技能栈
-        </h2>
-
-        <div ref={groupsRef} className="skills-grid">
-          {skillCategories.map((group) => (
-            <div key={group.label} className="skill-group">
-              <h3 className="skill-group-title">{group.label}</h3>
-              {group.skills.map((skill) => (
-                <div key={skill.name} className="skill-item">
-                  <div className="skill-info">
-                    <span className="skill-name">{skill.name}</span>
-                    <span className="skill-level">{skill.level}%</span>
+    <section id="skills" ref={sectionRef} className="section skills">
+      <div className="section-inner">
+        <div className="skills-intro">
+          <p className="section-eyebrow">Skills</p>
+          <h2 className="section-heading">技术栈</h2>
+          <div className="skill-tags">
+            {tags.map((t) => (
+              <span key={t} className="skill-tag">{t}</span>
+            ))}
+          </div>
+        </div>
+        <div ref={gridRef} className="skills-grid">
+          {groups.map((g) => (
+            <div key={g.title} className="skill-card ag-card">
+              <h3 className="skill-card-title">{g.title}</h3>
+              {g.skills.map((s) => (
+                <div key={s.name} className="skill-row">
+                  <div className="skill-row-head">
+                    <span>{s.name}</span>
+                    <span className="skill-pct">{s.level}%</span>
                   </div>
                   <div className="skill-bar">
                     <div
                       className="skill-bar-fill"
-                      data-level={skill.level}
+                      data-level={s.level}
                       style={{ width: '0%' }}
                     />
                   </div>
