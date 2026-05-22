@@ -1,103 +1,108 @@
 import { useEffect, useRef } from 'react'
-import { gsap, initGsap, revealUp } from '../lib/gsap'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-const stats = [
-  { value: 14, suffix: '+', label: '项目经验' },
-  { value: 4, suffix: '', label: '技术专栏' },
-  { value: 2, suffix: '年', label: '码龄' },
-]
+gsap.registerPlugin(ScrollTrigger)
 
 export default function About() {
   const sectionRef = useRef<HTMLElement>(null)
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const numRefs = useRef<HTMLSpanElement[]>([])
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const statsRef = useRef<HTMLDivElement>(null)
+  const statNumsRef = useRef<HTMLSpanElement[]>([])
 
   useEffect(() => {
-    initGsap()
     const ctx = gsap.context(() => {
-      revealUp('.about-label, .about-text', sectionRef.current, { start: 'top 80%' })
+      // Section title with scale reveal
+      gsap.from(titleRef.current, {
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
+        y: 40, opacity: 0, scale: 0.95,
+        duration: 0.8, ease: 'power4.out',
+      })
 
-      const lines = headingRef.current?.querySelectorAll('.about-heading-line')
-      if (lines?.length) {
-        gsap.from(lines, {
-          y: 60,
-          opacity: 0,
-          rotateX: -12,
-          transformOrigin: '50% 100%',
-          duration: 0.9,
-          stagger: 0.15,
-          ease: 'power4.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 75%',
-            toggleActions: 'play none none reverse',
-          },
+      // Text paragraphs stagger with clip reveal feel
+      const paragraphs = textRef.current?.querySelectorAll('p')
+      if (paragraphs) {
+        gsap.from(paragraphs, {
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 70%' },
+          y: 30, opacity: 0,
+          duration: 0.7, stagger: 0.12,
+          ease: 'power3.out',
         })
       }
 
-      gsap.from('.about-stat', {
-        scrollTrigger: {
-          trigger: '.about-stats',
-          start: 'top 88%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 56,
-        opacity: 0,
-        scale: 0.92,
-        duration: 0.75,
-        stagger: 0.12,
-        ease: 'back.out(1.5)',
-      })
+      // Stats cards with bounce
+      const cards = statsRef.current?.children
+      if (cards) {
+        gsap.from(cards, {
+          scrollTrigger: { trigger: sectionRef.current, start: 'top 65%' },
+          y: 50, opacity: 0, scale: 0.9,
+          duration: 0.9, stagger: 0.1,
+          ease: 'back.out(1.7)',
+        })
+      }
 
-      stats.forEach((s, i) => {
-        const el = numRefs.current[i]
+      // Number counter
+      const targets = [
+        { el: statNumsRef.current[0], target: 14, suffix: '+' },
+        { el: statNumsRef.current[1], target: 4, suffix: '' },
+        { el: statNumsRef.current[2], target: 3, suffix: '' },
+      ]
+      targets.forEach(({ el, target, suffix }) => {
         if (!el) return
-        const obj = { v: 0 }
+        const obj = { val: 0 }
         gsap.to(obj, {
-          v: s.value,
-          duration: 1.8,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: '.about-stats',
-            start: 'top 82%',
-            end: 'top 50%',
-            scrub: 0.8,
-          },
-          onUpdate: () => {
-            el.textContent = `${Math.round(obj.v)}${s.suffix}`
-          },
+          val: target, duration: 2.2, ease: 'power2.out',
+          scrollTrigger: { trigger: statsRef.current, start: 'top 80%' },
+          onUpdate: () => { el.textContent = `${Math.round(obj.val)}${suffix}` },
         })
       })
     }, sectionRef)
     return () => ctx.revert()
   }, [])
 
+  const setStatRef = (el: HTMLSpanElement | null, index: number) => {
+    if (el) statNumsRef.current[index] = el
+  }
+
   return (
-    <section id="about" ref={sectionRef} className="section about">
-      <div className="section-inner">
-        <p className="about-label section-eyebrow">About</p>
-        <h2 ref={headingRef} className="about-heading section-heading">
-          <span className="about-heading-line">为复杂业务而生，</span>
-          <span className="about-heading-line">为用户体验而精。</span>
+    <section id="about" ref={sectionRef} className="about">
+      <div className="section-grid" />
+      <div className="deco-dots deco-dots-1" />
+      <div className="deco-dots deco-dots-2" />
+      <div className="section-container">
+        <h2 ref={titleRef} className="section-title">
+          <span className="section-number">01.</span> 关于我
         </h2>
-        <p className="about-text section-body">
-          闽南科技学院 2027 届毕业生，持续在 CSDN 分享前端学习笔记与实战总结。
-          擅长 Vue3 全家桶、数据可视化、地图与实时通信，能在紧张周期内完成从需求拆解到上线交付的全流程前端工作。
-        </p>
-        <div className="about-stats">
-          {stats.map((s, i) => (
-            <div key={s.label} className="about-stat ag-card">
-              <span
-                ref={(el) => {
-                  if (el) numRefs.current[i] = el
-                }}
-                className="about-stat-num"
-              >
-                0{s.suffix}
-              </span>
-              <span className="about-stat-label">{s.label}</span>
+        <div className="about-grid">
+          <div ref={textRef} className="about-text">
+            <p>
+              你好！我是 <strong>陈宇彬</strong>，一名 27 届毕业生，正在寻找前端开发岗位。
+            </p>
+            <p>
+              我热衷于用技术创造优秀的用户体验，熟练掌握 <strong>Vue3</strong>、<strong>React</strong>、<strong>TypeScript</strong> 等现代前端技术栈。
+              从政府级项目到跨境电商平台，从 AI 面试系统到 O2O 服务平台，我参与了多种类型的项目开发，
+              积累了丰富的前端工程化与复杂业务处理经验。
+            </p>
+            <p>
+              在团队中，我曾担任前端负责人与核心开发角色，善于协调沟通，注重代码质量与工程规范。
+              我相信优秀的前端不仅是功能的实现，更是性能、体验与美学的平衡。
+            </p>
+          </div>
+          <div ref={statsRef} className="about-stats">
+            <div className="stat-card">
+              <span ref={(el) => setStatRef(el, 0)} className="stat-number">0</span>
+              <span className="stat-label">项目经验</span>
             </div>
-          ))}
+            <div className="stat-card">
+              <span ref={(el) => setStatRef(el, 1)} className="stat-number">0</span>
+              <span className="stat-label">技术栈掌握</span>
+            </div>
+            <div className="stat-card">
+              <span ref={(el) => setStatRef(el, 2)} className="stat-number">0</span>
+              <span className="stat-label">团队主导项目</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

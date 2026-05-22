@@ -1,115 +1,91 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, initGsap } from '../lib/gsap'
+import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { navItems } from '../data/nav'
-import BlindsMenu from './effects/BlindsMenu'
-import NavPreview from './effects/NavPreview'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const navLinks = [
+  { label: '首页', href: '#hero' },
+  { label: '关于', href: '#about' },
+  { label: '项目', href: '#projects' },
+  { label: '技能', href: '#skills' },
+  { label: '联系', href: '#contact' },
+]
 
 export default function Navbar() {
   const navRef = useRef<HTMLElement>(null)
-  const [active, setActive] = useState('hero')
-  const [menuOpen, setMenuOpen] = useState(false)
+  const linksRef = useRef<HTMLUListElement>(null)
+  const [activeSection, setActiveSection] = useState('hero')
 
+  // Entrance + scroll hide/show (floating pill)
   useEffect(() => {
-    initGsap()
     const nav = navRef.current
     if (!nav) return
 
-    gsap.from(nav, { y: -32, opacity: 0, duration: 0.9, ease: 'power3.out', delay: 0.15 })
+    const ctx = gsap.context(() => {
+      gsap.from(nav, { y: -80, opacity: 0, duration: 0.8, ease: 'power3.out' })
 
-    let last = 0
-    const hideSt = ScrollTrigger.create({
-      onUpdate: (self) => {
-        const y = self.scroll()
-        if (menuOpen) return
-        if (y > last && y > 100) {
-          gsap.to(nav, { y: -80, opacity: 0, duration: 0.35, ease: 'power2.in' })
-        } else {
-          gsap.to(nav, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' })
-        }
-        last = y
-      },
+      let lastScroll = 0
+      ScrollTrigger.create({
+        onUpdate: (self) => {
+          const st = self.scroll()
+          if (st > lastScroll && st > 100) {
+            gsap.to(nav, { y: -80, opacity: 0, duration: 0.35, ease: 'power2.out' })
+          } else {
+            gsap.to(nav, { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' })
+          }
+          lastScroll = st
+        },
+      })
     })
 
-    const bgSt = ScrollTrigger.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (self) => {
-        const p = Math.min(self.progress * 8, 1)
-        nav.style.background = `rgba(11, 11, 15, ${0.72 + p * 0.2})`
-        nav.style.borderColor = `rgba(255, 255, 255, ${0.06 + p * 0.06})`
-      },
-    })
+    return () => ctx.revert()
+  }, [])
 
+  // Active section detection via IntersectionObserver
+  useEffect(() => {
     const sections = document.querySelectorAll('section[id]')
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(e.target.id)
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id)
+          }
         })
       },
-      { rootMargin: '-42% 0px -48% 0px' },
+      { threshold: 0.3, rootMargin: '-10% 0px -10% 0px' }
     )
     sections.forEach((s) => observer.observe(s))
+    return () => observer.disconnect()
+  }, [])
 
-    return () => {
-      hideSt.kill()
-      bgSt.kill()
-      observer.disconnect()
-    }
-  }, [menuOpen])
-
-  const blindsLinks = [
-    { label: '首页', href: '#hero', sub: 'Home' },
-    ...navItems.map((n) => ({ label: n.label, href: n.href, sub: n.sub })),
-  ]
+  const scrollTo = (href: string) => {
+    const el = document.querySelector(href)
+    el?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
-    <>
-      <nav ref={navRef} className="nav">
-        <a href="#hero" className="nav-logo">
-          <span className="nav-logo-mark">CYB</span>
-          <span className="nav-logo-name">陈宇彬</span>
-        </a>
-
-        <ul className="nav-links nav-links--desktop">
-          {navItems.map((item) => (
-            <NavPreview
-              key={item.href}
-              label={item.label}
-              href={item.href}
-              src={item.preview}
-              active={active === item.href.slice(1)}
-            />
-          ))}
+    <nav ref={navRef} className="navbar">
+      <div className="navbar-inner">
+        <span className="navbar-logo" onClick={() => scrollTo('#hero')}>
+          哈卡尔<span className="logo-dot">.</span>
+        </span>
+        <ul ref={linksRef} className="navbar-links">
+          {navLinks.map((link) => {
+            const sectionId = link.href.replace('#', '')
+            return (
+              <li key={link.href}>
+                <button
+                  className={activeSection === sectionId ? 'nav-link-active' : ''}
+                  onClick={() => scrollTo(link.href)}
+                >
+                  {link.label}
+                </button>
+              </li>
+            )
+          })}
         </ul>
-
-        <div className="nav-actions">
-          <a
-            href="https://blog.csdn.net/chyb918"
-            target="_blank"
-            rel="noreferrer"
-            className="nav-cta"
-          >
-            CSDN
-          </a>
-          <button
-            type="button"
-            className="nav-menu-btn"
-            aria-label="打开菜单"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
-          >
-            <span className="material-sym">menu</span>
-          </button>
-        </div>
-      </nav>
-
-      <BlindsMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        links={blindsLinks}
-      />
-    </>
+      </div>
+    </nav>
   )
 }
