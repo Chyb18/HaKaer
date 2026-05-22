@@ -81,7 +81,7 @@ export default function About() {
           <span className="about-heading-line">为用户体验而精。</span>
         </h2>
         <p className="about-text section-body">
-          闽南科技学院 2027 届毕业生，持续在 CSDN 分享前端学习笔记与实战总结。
+          闽南科技学院 2027 届毕业生，在 CSDN 分享前端学习笔记与实战总结。
           擅长 Vue3 全家桶、数据可视化、地图与实时通信，能在紧张周期内完成从需求拆解到上线交付的全流程前端工作。
         </p>
         <div className="about-stats">
