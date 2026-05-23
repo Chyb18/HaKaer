@@ -1,11 +1,14 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
+
+export { useGSAP }
 
 let initialized = false
 
 export function initGsap() {
   if (initialized) return
-  gsap.registerPlugin(ScrollTrigger)
+  gsap.registerPlugin(ScrollTrigger, useGSAP)
   ScrollTrigger.defaults({
     toggleActions: 'play none none reverse',
   })

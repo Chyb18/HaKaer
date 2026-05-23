@@ -31,7 +31,7 @@ export function layoutMasonry(
   const gridWidth = grid.clientWidth
 
   if (gridWidth <= 0) {
-    gsap.set(items, { opacity: 1 })
+    gsap.set(items, { opacity: 1, visibility: 'visible' })
     return { totalHeight: 0 }
   }
 
@@ -39,9 +39,8 @@ export function layoutMasonry(
   const colHeights = new Array(cols).fill(0)
   const positions: { x: number; y: number; w: number; h: number }[] = []
 
-  // 先统一宽度并清除 transform，再测量真实高度
   items.forEach((item) => {
-    gsap.killTweensOf(item)
+    gsap.killTweensOf(item, 'left,top,width,height')
     gsap.set(item, {
       position: 'absolute',
       left: 0,
@@ -50,11 +49,12 @@ export function layoutMasonry(
       x: 0,
       y: 0,
       scale: 1,
+      opacity: 1,
+      visibility: 'visible',
       clearProps: 'transform',
     })
   })
 
-  // 强制回流，确保 offsetHeight 准确
   void grid.offsetHeight
 
   items.forEach((item) => {
@@ -93,6 +93,7 @@ export function layoutMasonry(
       height: totalH,
       duration,
       ease: 'power3.out',
+      overwrite: 'auto',
     })
   }
 

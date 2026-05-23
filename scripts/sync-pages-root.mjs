@@ -1,9 +1,7 @@
 import { cp, rm, mkdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 
-const distHtml = existsSync('dist/index.html')
-  ? 'dist/index.html'
-  : 'dist/index.dev.html'
+const distHtml = 'dist/index.html'
 
 if (!existsSync(distHtml)) {
   console.error('Run npm run build first.')

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import gsap from 'gsap'
 import { initGsap } from '../../lib/gsap'
+import { scrambleText } from '../../lib/scrambleText'
 
 interface NavPreviewProps {
   src: string
@@ -45,10 +46,17 @@ export default function NavPreview({ src, label, href, active }: NavPreviewProps
     })
   }
 
+  const handleMouseEnter = () => {
+    show()
+    if (linkRef.current) {
+      scrambleText(linkRef.current, label, { duration: 0.55 })
+    }
+  }
+
   return (
     <li
       className="nav-preview-item"
-      onMouseEnter={show}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={hide}
     >
       <a

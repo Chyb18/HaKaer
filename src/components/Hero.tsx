@@ -1,87 +1,98 @@
-import { useEffect, useRef } from 'react'
-import { gsap, initGsap, scrubParallax } from '../lib/gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useRef } from 'react'
+import { useGSAP } from '@gsap/react'
+import { gsap, initGsap } from '../lib/gsap'
+import {
+  bindHeroScrollExit,
+  clipRevealUp,
+  EASE_CINEMATIC,
+  kenBurnsIn,
+} from '../lib/gsap-cinematic'
 import ScrambleText from './effects/ScrambleText'
 
-const FLOAT_ICONS = ['code', 'deploy', 'spark', 'terminal', 'folder']
+const HERO_BG =
+  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80&auto=format&fit=crop'
+
+const FLOAT_ICONS = ['code', 'deployed_code', 'spark', 'terminal', 'folder']
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
-  const line1Ref = useRef<HTMLSpanElement>(null)
-  const descRef = useRef<HTMLParagraphElement>(null)
-  const ctaRef = useRef<HTMLDivElement>(null)
-  const orbRef = useRef<HTMLDivElement>(null)
-  const gridRef = useRef<HTMLDivElement>(null)
+  const bgMediaRef = useRef<HTMLDivElement>(null)
+  const vignetteRef = useRef<HTMLDivElement>(null)
+  const aliasRevealRef = useRef<HTMLSpanElement>(null)
 
-  useEffect(() => {
-    initGsap()
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
-      tl.from(line1Ref.current, {
-        y: 100,
-        opacity: 0,
-        rotationX: -40,
-        transformOrigin: '50% 100%',
-        duration: 1.1,
-      })
-        .from('.hero-eyebrow, .hero-available', { y: 24, opacity: 0, duration: 0.7 }, '-=0.5')
-        .from(descRef.current, { y: 36, opacity: 0, duration: 0.85 }, '-=0.45')
-        .from(ctaRef.current?.children ?? [], {
-          y: 28,
-          opacity: 0,
-          stagger: 0.1,
-          duration: 0.6,
-        }, '-=0.4')
+  useGSAP(
+    () => {
+      initGsap()
+      const section = sectionRef.current
+      if (!section) return
 
-      gsap.to(orbRef.current, {
-        scale: 1.1,
-        opacity: 0.9,
-        duration: 4,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (reduceMotion) {
+        gsap.set('.hero-title-reveal', { clipPath: 'none' })
+        gsap.set(bgMediaRef.current, { scale: 1 })
+        return
+      }
+
+      // Ken Burns 开场
+      if (bgMediaRef.current) {
+        kenBurnsIn(bgMediaRef.current, { fromScale: 1.05, duration: 2.85 })
+      }
+
+      const intro = gsap.timeline({ defaults: { ease: EASE_CINEMATIC } })
+
+      const titleReveal = clipRevealUp('.hero-title-reveal', { stagger: 0.16, duration: 1.2 })
+      if (titleReveal) intro.add(titleReveal, 0.12)
+
+      intro
+        .from(
+          '.hero-eyebrow, .hero-available',
+          { y: 28, opacity: 0, duration: 0.85, stagger: 0.08 },
+          0.35,
+        )
+        .from('.hero-desc', { y: 40, opacity: 0, duration: 0.95 }, 0.55)
+        .from(
+          '.hero-cta > *',
+          { y: 32, opacity: 0, duration: 0.7, stagger: 0.1 },
+          0.72,
+        )
+        .from('.hero-scroll', { opacity: 0, y: 12, duration: 0.6 }, 1.05)
+
+      // 滚动：背景视差 + 前景变暗缩小
+      bindHeroScrollExit(section, {
+        inner: innerRef.current,
+        bgMedia: bgMediaRef.current,
+        vignette: vignetteRef.current,
+        floats: '.hero-float',
       })
 
       gsap.utils.toArray<HTMLElement>('.hero-float').forEach((el, i) => {
         gsap.to(el, {
-          y: '+=18',
-          x: '+=12',
-          duration: 2.8 + i * 0.35,
+          y: '+=16',
+          x: '+=10',
+          duration: 2.6 + i * 0.3,
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
         })
       })
-
-      const section = sectionRef.current
-      if (section) {
-        ScrollTrigger.create({
-          trigger: section,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.8,
-          onUpdate: (self) => {
-            const p = self.progress
-            gsap.set(innerRef.current, {
-              y: p * 120,
-              opacity: 1 - p * 0.85,
-              scale: 1 - p * 0.06,
-            })
-            gsap.set(orbRef.current, { y: p * 80, scale: 1 + p * 0.15 })
-            gsap.set(gridRef.current, { y: p * 40 })
-          },
-        })
-        scrubParallax('.hero-float', section, { y: -80 }, 'top bottom', 'bottom top')
-      }
-    }, sectionRef)
-    return () => ctx.revert()
-  }, [])
+    },
+    { scope: sectionRef },
+  )
 
   return (
     <section id="hero" ref={sectionRef} className="hero">
-      <div ref={gridRef} className="hero-grid" aria-hidden />
-      <div ref={orbRef} className="hero-orb" aria-hidden />
+      <div className="hero-bg" aria-hidden>
+        <div
+          ref={bgMediaRef}
+          className="hero-bg-media"
+          style={{ backgroundImage: `url(${HERO_BG})` }}
+        />
+        <div className="hero-bg-gradient" />
+        <div ref={vignetteRef} className="hero-vignette" />
+      </div>
+
+      <div className="hero-grid" aria-hidden />
 
       {FLOAT_ICONS.map((icon, i) => (
         <span
@@ -89,27 +100,30 @@ export default function Hero() {
           className={`hero-float hero-float--${i + 1} material-sym`}
           aria-hidden
         >
-          {icon === 'code' && 'code'}
-          {icon === 'deploy' && 'deployed_code'}
-          {icon === 'spark' && 'spark'}
-          {icon === 'terminal' && 'terminal'}
-          {icon === 'folder' && 'folder'}
+          {icon}
         </span>
       ))}
 
       <div ref={innerRef} className="hero-inner">
         <p className="hero-eyebrow">27 届 · 闽南科技学院 · 前端开发工程师</p>
         <h1 className="hero-title">
-          <span ref={line1Ref} className="hero-title-line">陈宇彬</span>
-          <span className="hero-title-line hero-title-accent hero-title-alias">
-            <ScrambleText text="（哈卡尔）" duration={1.4} delay={0.45} />
+          <span className="hero-title-row">
+            <span className="hero-title-reveal hero-title-line">陈宇彬</span>
+          </span>
+          <span className="hero-title-row">
+            <span
+              ref={aliasRevealRef}
+              className="hero-title-reveal hero-title-line hero-title-accent hero-title-alias"
+            >
+              <ScrambleText text="（哈卡尔）" duration={1.35} delay={0.95} />
+            </span>
           </span>
         </h1>
-        <p ref={descRef} className="hero-desc">
+        <p className="hero-desc">
           前端开发工程师，专注 Vue / React 生态，拥有 14+ 真实项目经验，
           涵盖政府级系统、跨境电商、AI 平台与小程序，志在构建优雅、高性能的 Web 应用。
         </p>
-        <div ref={ctaRef} className="hero-cta">
+        <div className="hero-cta">
           <a href="#projects" className="btn-ag btn-ag--primary">
             <span className="material-sym">play_arrow</span>
             查看项目

@@ -81,12 +81,34 @@ export default function PetalTrail() {
       const { x, y } = mouseRef.current
       if (x > 0 && y > 0) spawn(x, y)
 
+      // 任务 B: 在非移动端增加缓慢飘落的樱花微风效果，使得画面在鼠标不动时也保持灵动
+      const isMobile = window.innerWidth <= 768
+      if (!isMobile && Math.random() < 0.018) {
+        petalsRef.current.push({
+          x: Math.random() * canvas.width,
+          y: -20,
+          vx: Math.random() * 0.6 + 0.1, // 往右的柔和漂移
+          vy: Math.random() * 0.7 + 0.3, // 轻盈的下落速度
+          rot: Math.random() * Math.PI * 2,
+          rotV: (Math.random() - 0.5) * 0.03,
+          scale: Math.random() * 0.3 + 0.2, // 稍微缩小的远景花瓣，带来纵深感
+          life: 0,
+          maxLife: 180 + Math.random() * 100,
+        })
+      }
+
+      // 控制最大活动粒子数量以保证流畅运行
+      const maxCount = isMobile ? 40 : 100
+      if (petalsRef.current.length > maxCount) {
+        petalsRef.current.splice(0, petalsRef.current.length - maxCount)
+      }
+
       petalsRef.current = petalsRef.current.filter((p) => {
         p.life++
         p.x += p.vx
         p.y += p.vy
         p.rot += p.rotV
-        p.vy += 0.02
+        p.vy += 0.015 // 降低空气重力阻力以让微风花瓣更自然飘舞
         const alpha = 1 - p.life / p.maxLife
         if (alpha > 0) drawPetal(p, alpha * 0.85)
         return p.life < p.maxLife

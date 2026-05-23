@@ -19,7 +19,9 @@ npm run dev
 
 线上地址：https://Chyb18.github.io/HaKaer/
 
-仓库根目录的 `index.html`、`assets/` 为**构建产物**（由 CI 或下面命令生成）。本地开发入口为 `index.dev.html`（`npm run dev` 会自动使用）。
+本地开发使用根目录 `index.html`（入口 `/src/main.tsx`），请访问 **http://localhost:5173/**。
+
+推送到 GitHub 后，CI 会把构建产物写入根目录的 `index.html` 与 `assets/`（仅用于 Pages 发布）。若本地执行过 `npm run pages:sync` 导致 dev 异常，执行 `git restore index.html` 恢复即可。
 
 推送到 `master` 后，GitHub Actions 会构建并部署。
 
